@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, Field, Relationship, Column
 from sqlalchemy import String
 from pgvector.sqlalchemy import Vector  # type: ignore
 
-from enumfile import (
+from app.enumfile import (
     UserRole,
     Document_Process,
     Invitation_Status,
