@@ -2,3 +2,8 @@
  python-jose[cryptography]
  pgvector
 fastapi[all]
+pypdf 
+sentence-transformers
+sentence-transformers
+langchain
+langchain-groq

@@ -38,16 +38,18 @@ async def send_otp_email(to_email: str, otp_code: str) -> None:
 
 
 async def send_invite_email(to_email: str, token: str, role: str) -> None:
-    # This URL should point to your Flutter app's deep link or a web landing page
-    # that captures the token and lets the user set their name/password.
-    invite_link = f"https://your-frontend-domain.com/accept-invite?token={token}"
+    # Deep link that opens the Velixra Flutter app directly to the
+    # accept-invitation screen, with the token pre-filled.
+    invite_link = f"velixra://accept-invite?token={token}"
 
     subject = f"You've been invited to join Velixra Knowledge Hub as a {role.title()}"
     html_body = f"""
     <p>Hello,</p>
     <p>You have been invited to join Velixra Knowledge Hub as a <strong>{role}</strong>.</p>
-    <p>Click the link below to set up your account:</p>
+    <p>Open the Velixra app and tap the link below to set up your account:</p>
     <p><a href="{invite_link}">{invite_link}</a></p>
+    <p>If tapping the link doesn't open the app, open Velixra manually and enter this code on the invitation screen:</p>
+    <p><strong>{token}</strong></p>
     <p>This invitation will expire in 3 days.</p>
     """
     await _send_email(to_email, subject, html_body)

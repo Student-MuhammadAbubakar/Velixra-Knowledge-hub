@@ -4,7 +4,7 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.enumfile import Invitation_Status
-from model import User, Invitation
+from app.model import User, Invitation
 
 
 

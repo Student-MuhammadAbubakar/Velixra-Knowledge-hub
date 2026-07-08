@@ -105,5 +105,6 @@ class QueryLog(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     employee_id: int = Field(foreign_key="user.id")
     question: str
+    question_embedding: list = Field(sa_column=Column(Vector(384)))
     matched_chunk_ids: Optional[str] = Field(default=None)
     created_at: datetime = Field(default_factory=datetime.utcnow)

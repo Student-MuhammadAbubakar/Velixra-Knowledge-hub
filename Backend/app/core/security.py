@@ -47,11 +47,11 @@ def generate_otp(length: int = 6) -> str:
     return "".join(secrets.choice(string.digits) for _ in range(length))
 
 def otp_expiry(minutes: int = 10) -> datetime:
-    return datetime.now(timezone.utc) + timedelta(minutes=minutes)
-
-def generate_invite_token() -> str:
-    return secrets.token_urlsafe(32)
+    return datetime.utcnow() + timedelta(minutes=minutes)
 
 
 def invite_expiry(days: int = 3) -> datetime:
-    return datetime.now(timezone.utc) + timedelta(days=days)
+    return datetime.utcnow() + timedelta(days=days)
+
+def generate_invite_token() -> str:
+    return secrets.token_urlsafe(32)

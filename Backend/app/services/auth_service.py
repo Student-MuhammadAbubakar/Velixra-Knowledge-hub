@@ -44,7 +44,7 @@ async def login(session: AsyncSession, data: LoginRequest) -> TokenResponse:
             detail="This account has been deactivated",
         )
 
-    token = create_access_token(user_id=user.id, role=user.role.value)
+    token = create_access_token(user_id=user.id, role=user.role)
     return TokenResponse(access_token=token)
 
 
@@ -72,11 +72,10 @@ async def verify_otp(session: AsyncSession, data: VerifyOTPRequest) -> dict:
     if not user or not user.otp_code or user.otp_code != data.otp_code:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid OTP")
 
-    if user.otp_expires_at and user.otp_expires_at < datetime.now(timezone.utc):
+    if user.otp_expires_at and user.otp_expires_at < datetime.utcnow():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="OTP has expired")
 
     return {"message": "OTP verified"}
-
 
 # ---------- RESET PASSWORD ----------
 
@@ -86,7 +85,7 @@ async def reset_password(session: AsyncSession, data: ResetPasswordRequest) -> d
     if not user or not user.otp_code or user.otp_code != data.otp_code:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid OTP")
 
-    if user.otp_expires_at and user.otp_expires_at < datetime.now(timezone.utc):
+    if user.otp_expires_at and user.otp_expires_at < datetime.utcnow():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="OTP has expired")
 
     new_hash = hash_password(data.new_password)
@@ -149,8 +148,10 @@ async def accept_invitation(session: AsyncSession, data: AcceptInvitationRequest
     if not invitation or invitation.status != Invitation_Status.PENDING:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or already used invitation")
 
-    if invitation.expires_at < datetime.now(timezone.utc):
+    if invitation.expires_at < datetime.utcnow():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This invitation has expired")
+
+    # ... rest unchanged
 
     password_hash = hash_password(data.password)
 

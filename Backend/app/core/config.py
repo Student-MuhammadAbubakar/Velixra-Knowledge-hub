@@ -14,6 +14,7 @@ class Database_Settings(BaseSettings):
     SMTP_USERNAME: str
     SMTP_PASSWORD: str
     FROM_EMAIL: str
+    GROQ_API_KEY:str
     model_config=SettingsConfigDict(
         env_file=BASE_DIR / ".env",
         env_ignore_empty=True,
