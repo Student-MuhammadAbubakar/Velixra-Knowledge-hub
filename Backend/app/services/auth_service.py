@@ -1,4 +1,5 @@
-from datetime import datetime, timezone
+from ast import List
+from datetime import datetime
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,6 +26,8 @@ from app.schemas import (
     UserResponse,
 )
 from app.services import email_service
+from app.schemas import ManagerListItem, RequestChangeRequest
+from app.repositories import document_repo
 
 
 # ---------- LOGIN ----------
@@ -168,3 +171,27 @@ async def accept_invitation(session: AsyncSession, data: AcceptInvitationRequest
     await user_repo.mark_invitation_accepted(session, invitation)
 
     return UserResponse.model_validate(user)
+
+async def list_managers(session: AsyncSession) -> List[ManagerListItem]:
+    managers = await user_repo.get_by_role(session, UserRole.MANAGER)
+    return [ManagerListItem.model_validate(m) for m in managers]
+
+
+async def request_manager_change(session: AsyncSession, data: RequestChangeRequest) -> dict:
+    manager = await user_repo.get_by_id(session, data.manager_id)
+    if not manager or manager.role != UserRole.MANAGER:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Manager not found")
+
+    document_filename = None
+    if data.document_id is not None:
+        document = await document_repo.get_by_id(session, data.document_id)
+        if document:
+            document_filename = document.filename
+
+    await email_service.send_change_request_email(
+        to_email=manager.email,
+        manager_name=manager.name,
+        document_filename=document_filename,
+        message=data.message,
+    )
+    return {"message": f"Request sent to {manager.name}"}

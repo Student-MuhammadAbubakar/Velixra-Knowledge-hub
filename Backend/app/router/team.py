@@ -8,9 +8,11 @@ from app.schemas import (
     InviteManagerRequest,
     InviteEmployeeRequest,
     AcceptInvitationRequest,
+    ManagerListItem,
     UserResponse,
 )
 from app.model import User
+from app.schemas import ManagerListItem, RequestChangeRequest
 
 router = APIRouter(prefix="/team", tags=["Team"])
 
@@ -39,3 +41,21 @@ async def accept_invitation(
     session: AsyncSession = Depends(get_session),
 ):
     return await auth_service.accept_invitation(session, data)
+
+
+
+@router.get("/managers", response_model=list[ManagerListItem])
+async def list_managers(
+    session: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_owner),
+):
+    return await auth_service.list_managers(session)
+
+
+@router.post("/request-change")
+async def request_change(
+    data: RequestChangeRequest,
+    session: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_owner),
+):
+    return await auth_service.request_manager_change(session, data)

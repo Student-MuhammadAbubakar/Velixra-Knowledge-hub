@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../providers/document_provider.dart';
+import '../shared/responsive_wrapper.dart';
 import 'widgets/document_list_tile.dart';
 import '../owner/widgets/logout_button.dart';
 import '../owner/widgets/invite_dialog.dart';
@@ -43,8 +44,7 @@ class ManagerPanelScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: ResponsiveWrapper(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(28),
             child: Container(
@@ -89,6 +89,8 @@ class ManagerPanelScreen extends ConsumerWidget {
                     ),
                   ),
 
+                  // This Column now sits directly under SafeArea (bounded height),
+                  // so Expanded can correctly fill the remaining space below the header.
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.all(20),
@@ -137,8 +139,9 @@ class ManagerPanelScreen extends ConsumerWidget {
                                   context: context,
                                   builder: (_) => InviteDialog(
                                     title: "Invite an employee",
-                                    onSubmit: (email) =>
-                                        ref.read(inviteProvider.notifier).inviteEmployee(email),
+                                    onSubmit: (email) => ref
+                                        .read(inviteProvider.notifier)
+                                        .inviteEmployee(email),
                                   ),
                                 );
                               },
@@ -150,7 +153,8 @@ class ManagerPanelScreen extends ConsumerWidget {
                               ),
                               child: Text(
                                 "Invite employee",
-                                style: AppTextStyles.buttonText.copyWith(color: AppColors.navy),
+                                style: AppTextStyles.buttonText
+                                    .copyWith(color: AppColors.navy),
                               ),
                             ),
                           ),
@@ -163,8 +167,7 @@ class ManagerPanelScreen extends ConsumerWidget {
                           documentsAsync.when(
                             loading: () => const Padding(
                               padding: EdgeInsets.symmetric(vertical: 20),
-                              child: Center(
-                                  child: CircularProgressIndicator()),
+                              child: Center(child: CircularProgressIndicator()),
                             ),
                             error: (err, _) =>
                                 Text("Failed to load documents: $err"),
@@ -208,8 +211,7 @@ class ManagerPanelScreen extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text("This week",
                                       style: AppTextStyles.sectionTitle),

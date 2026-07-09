@@ -8,7 +8,9 @@ import 'widgets/stat_card.dart';
 import 'widgets/question_progress_tile.dart';
 import 'widgets/logout_button.dart';
 import 'widgets/invite_dialog.dart';
+import 'widgets/request_change_dialog.dart';
 import '../../providers/team_provider.dart';
+import '../shared/responsive_wrapper.dart';
 
 class OwnerDashboardScreen extends ConsumerWidget {
   const OwnerDashboardScreen({super.key});
@@ -21,13 +23,12 @@ class OwnerDashboardScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: Container(
-              color: AppColors.cardBody,
-              child: SingleChildScrollView(
+        child: SingleChildScrollView(
+          child: ResponsiveWrapper(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: Container(
+                color: AppColors.cardBody,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -102,12 +103,10 @@ class OwnerDashboardScreen extends ConsumerWidget {
                                 decoration: BoxDecoration(
                                   color: AppColors.cardBody,
                                   borderRadius: BorderRadius.circular(16),
-                                  border:
-                                  Border.all(color: AppColors.divider),
+                                  border: Border.all(color: AppColors.divider),
                                 ),
                                 child: Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text("Top asked questions",
                                         style: AppTextStyles.sectionTitle),
@@ -131,36 +130,38 @@ class OwnerDashboardScreen extends ConsumerWidget {
                                 decoration: BoxDecoration(
                                   color: AppColors.cardBody,
                                   borderRadius: BorderRadius.circular(16),
-                                  border:
-                                  Border.all(color: AppColors.divider),
+                                  border: Border.all(color: AppColors.divider),
                                 ),
                                 child: Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text("Public documents",
                                         style: AppTextStyles.sectionTitle),
                                     const SizedBox(height: 12),
                                     documentsAsync.when(
                                       loading: () => const Padding(
-                                        padding:
-                                        EdgeInsets.symmetric(vertical: 8),
+                                        padding: EdgeInsets.symmetric(vertical: 8),
                                         child: LinearProgressIndicator(),
                                       ),
                                       error: (err, _) =>
                                           Text("Failed to load documents"),
                                       data: (docs) {
                                         final publicDocs = docs
-                                            .where((d) =>
-                                        d.visibility == "public")
+                                            .where((d) => d.visibility == "public")
                                             .toList();
+
+                                        if (publicDocs.isEmpty) {
+                                          return Text(
+                                            "No public documents yet.",
+                                            style: AppTextStyles.secondaryText,
+                                          );
+                                        }
+
                                         return Column(
                                           children: publicDocs
                                               .map((doc) => Padding(
-                                            padding:
-                                            const EdgeInsets
-                                                .symmetric(
-                                                vertical: 4),
+                                            padding: const EdgeInsets
+                                                .symmetric(vertical: 6),
                                             child: Row(
                                               children: [
                                                 const Icon(
@@ -169,14 +170,28 @@ class OwnerDashboardScreen extends ConsumerWidget {
                                                   color: AppColors
                                                       .statusGreen,
                                                 ),
-                                                const SizedBox(
-                                                    width: 8),
+                                                const SizedBox(width: 8),
                                                 Expanded(
-                                                  child: Text(
-                                                    doc.filename,
-                                                    style:
-                                                    AppTextStyles
-                                                        .bodyText,
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                    CrossAxisAlignment
+                                                        .start,
+                                                    children: [
+                                                      Text(
+                                                        doc.filename,
+                                                        style:
+                                                        AppTextStyles
+                                                            .bodyText,
+                                                      ),
+                                                      if (doc
+                                                          .uploadedByName !=
+                                                          null)
+                                                        Text(
+                                                          "Uploaded by ${doc.uploadedByName}",
+                                                          style: AppTextStyles
+                                                              .secondaryText,
+                                                        ),
+                                                    ],
                                                   ),
                                                 ),
                                               ],
@@ -197,19 +212,21 @@ class OwnerDashboardScreen extends ConsumerWidget {
                                 height: 52,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    // wired to a request/notification flow later
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => const RequestChangeDialog(),
+                                    );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.gold,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                      BorderRadius.circular(14),
+                                      borderRadius: BorderRadius.circular(14),
                                     ),
                                   ),
                                   child: Text(
                                     "Request change from manager",
-                                    style: AppTextStyles.buttonText.copyWith(
-                                        color: AppColors.textPrimary),
+                                    style: AppTextStyles.buttonText
+                                        .copyWith(color: AppColors.textPrimary),
                                   ),
                                 ),
                               ),
@@ -223,8 +240,9 @@ class OwnerDashboardScreen extends ConsumerWidget {
                                       context: context,
                                       builder: (_) => InviteDialog(
                                         title: "Invite a manager",
-                                        onSubmit: (email) =>
-                                            ref.read(inviteProvider.notifier).inviteManager(email),
+                                        onSubmit: (email) => ref
+                                            .read(inviteProvider.notifier)
+                                            .inviteManager(email),
                                       ),
                                     );
                                   },
@@ -236,7 +254,8 @@ class OwnerDashboardScreen extends ConsumerWidget {
                                   ),
                                   child: Text(
                                     "Invite manager",
-                                    style: AppTextStyles.buttonText.copyWith(color: AppColors.navy),
+                                    style: AppTextStyles.buttonText
+                                        .copyWith(color: AppColors.navy),
                                   ),
                                 ),
                               ),

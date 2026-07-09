@@ -68,6 +68,7 @@ class DocumentResponse(BaseModel):
     id: int
     filename: str
     uploaded_by: int
+    uploaded_by_name: Optional[str] = None  # only populated for the owner's view
     visibility: Document_Status
     process_status: Document_Process
     created_at: datetime
@@ -130,3 +131,16 @@ class TopQuestion(BaseModel):
 class OwnerAnalyticsResponse(BaseModel):
     document_stats: DocumentAnalytics
     top_questions: List[TopQuestion]
+class ManagerListItem(BaseModel):
+    id: int
+    name: str
+    email: str
+
+    class Config:
+        from_attributes = True
+
+
+class RequestChangeRequest(BaseModel):
+    manager_id: int
+    document_id: Optional[int] = None
+    message: str

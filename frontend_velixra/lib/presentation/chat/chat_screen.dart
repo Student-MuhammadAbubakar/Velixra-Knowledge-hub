@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../providers/chat_provider.dart';
+import '../shared/responsive_wrapper.dart';
 import 'widgets/chat_bubble.dart';
 import 'widgets/chat_input_bar.dart';
+import 'widgets/chat_history_drawer.dart';
+import '../owner/widgets/logout_button.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -45,47 +48,52 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: const ChatHistoryDrawer(),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: ResponsiveWrapper(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(28),
             child: Container(
               color: AppColors.cardBody,
               child: Column(
                 children: [
-                  // Navy header
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
                     decoration: const BoxDecoration(
                       color: AppColors.navy,
-                      borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(28)),
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        IconButton(
-                          icon: const Icon(Icons.menu, color: AppColors.white),
-                          onPressed: () {
-                            // opens chat history drawer, wired next
-                          },
-                        ),
-                        const SizedBox(width: 4),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
                           children: [
-                            Text("Ask Velixra",
-                                style: AppTextStyles.headerTitle),
-                            Text("Reimbursement policy chat",
-                                style: AppTextStyles.headerSubtitle),
+                            Builder(
+                              builder: (innerContext) => IconButton(
+                                icon: const Icon(Icons.menu, color: AppColors.white),
+                                onPressed: () => Scaffold.of(innerContext).openDrawer(),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Ask Velixra", style: AppTextStyles.headerTitle),
+                                Text("Reimbursement policy chat",
+                                    style: AppTextStyles.headerSubtitle),
+                              ],
+                            ),
                           ],
                         ),
+                        const LogoutButton(),
                       ],
                     ),
                   ),
 
-                  // Message list
+                  // Message list — now sits under a bounded-height Column
+                  // (SafeArea gives finite height), so Expanded works correctly
+                  // and ListView.builder handles its own scrolling internally.
                   Expanded(
                     child: chatState.messages.isEmpty
                         ? Center(

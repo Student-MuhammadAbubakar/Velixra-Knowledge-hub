@@ -1,9 +1,9 @@
-from typing import Optional
+from typing import List, Optional
 from datetime import datetime
-from sqlmodel import select
+from sqlmodel import col, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.enumfile import Invitation_Status
+from app.enumfile import Invitation_Status, UserRole
 from app.model import User, Invitation
 
 
@@ -85,3 +85,8 @@ async def mark_invitation_accepted(session: AsyncSession, invitation: Invitation
     await session.commit()
     await session.refresh(invitation)
     return invitation
+
+async def get_by_role(session: AsyncSession, role: UserRole) -> List[User]:
+    query = select(User).where(col(User.role) == role)
+    result = await session.execute(query)
+    return list(result.scalars().all())

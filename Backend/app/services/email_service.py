@@ -2,6 +2,7 @@ import asyncio
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from typing import Optional
 
 from app.core.config import Settings
 
@@ -51,5 +52,26 @@ async def send_invite_email(to_email: str, token: str, role: str) -> None:
     <p>If tapping the link doesn't open the app, open Velixra manually and enter this code on the invitation screen:</p>
     <p><strong>{token}</strong></p>
     <p>This invitation will expire in 3 days.</p>
+    """
+    await _send_email(to_email, subject, html_body)
+
+async def send_change_request_email(
+    to_email: str,
+    manager_name: str,
+    document_filename: Optional[str],
+    message: str,
+) -> None:
+    subject = "Velixra Knowledge Hub — Action requested by the owner"
+    doc_line = (
+        f"<p>Regarding document: <strong>{document_filename}</strong></p>"
+        if document_filename else ""
+    )
+    html_body = f"""
+    <p>Hi {manager_name},</p>
+    <p>The owner has requested the following change:</p>
+    {doc_line}
+    <blockquote style="border-left: 3px solid #D4A72C; padding-left: 12px; margin-left: 0;">
+        {message}
+    </blockquote>
     """
     await _send_email(to_email, subject, html_body)

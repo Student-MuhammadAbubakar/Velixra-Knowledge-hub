@@ -41,6 +41,7 @@ async def get_sessions_for_employee(
         select(ChatSession)
         .where(col(ChatSession.employee_id) == employee_id)
         .order_by(col(ChatSession.created_at).desc())
+        .options(selectinload(ChatSession.messages))  # type: ignore[arg-type]
     )
     result = await session.execute(query)
     return list(result.scalars().all())

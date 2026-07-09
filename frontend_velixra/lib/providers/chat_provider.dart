@@ -42,7 +42,9 @@ class ChatState {
 
 class ChatNotifier extends StateNotifier<ChatState> {
   final ChatRepository repository;
-  ChatNotifier(this.repository) : super(ChatState());
+  final Ref ref;
+
+  ChatNotifier(this.repository, this.ref) : super(ChatState());
 
   Future<void> sendMessage(String question) async {
     if (question.trim().isEmpty) return;
@@ -80,6 +82,11 @@ class ChatNotifier extends StateNotifier<ChatState> {
         messages: [...state.messages, assistantMessage],
         isSending: false,
       );
+
+      // A new session may have just been created (or an existing one
+      // updated with a new message) — refresh the drawer's cached list
+      // so it reflects this conversation without needing a manual reload.
+      ref.invalidate(chatSessionsProvider);
     } catch (e) {
       state = state.copyWith(isSending: false, error: e.toString());
     }
@@ -95,7 +102,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
 }
 
 final chatProvider = StateNotifierProvider<ChatNotifier, ChatState>((ref) {
-  return ChatNotifier(ref.watch(chatRepositoryProvider));
+  return ChatNotifier(ref.watch(chatRepositoryProvider), ref);
 });
 
 final chatSessionsProvider =

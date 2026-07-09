@@ -8,7 +8,7 @@ from app.core.dependencies import (
 )
 from app.services import document_service
 from app.schemas import DocumentResponse, DocumentUpdateRequest
-from app.enumfile import Document_Status, UserRole
+from app.enumfile import Document_Status
 from app.model import User
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
@@ -30,17 +30,6 @@ async def upload_document(
         background_tasks=background_tasks,
     )
 
-
-@router.get("", response_model=list[DocumentResponse])
-async def list_documents(
-    session: AsyncSession = Depends(get_session),
-    current_user: User = Depends(get_current_user),
-):
-    # Employees only ever see PUBLIC documents; owner/manager see everything.
-    only_public = current_user.role == UserRole.EMPLOYEE
-    return await document_service.list_documents(session, only_public=only_public)
-
-
 @router.get("/{document_id}", response_model=DocumentResponse)
 async def get_document(
     document_id: int,
@@ -48,6 +37,13 @@ async def get_document(
     current_user: User = Depends(get_current_user),
 ):
     return await document_service.get_document(session, document_id)
+
+@router.get("", response_model=list[DocumentResponse])
+async def list_documents(
+    session: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    return await document_service.list_documents(session, current_user)
 
 
 @router.patch("/{document_id}", response_model=DocumentResponse)
@@ -57,7 +53,7 @@ async def update_document(
     session: AsyncSession = Depends(get_session),
     current_user: User = Depends(get_current_manager_or_owner),
 ):
-    return await document_service.update_document(session, document_id, data)
+    return await document_service.update_document(session, document_id, data, current_user)
 
 
 @router.delete("/{document_id}")
@@ -66,4 +62,4 @@ async def delete_document(
     session: AsyncSession = Depends(get_session),
     current_user: User = Depends(get_current_manager_or_owner),
 ):
-    return await document_service.delete_document(session, document_id)
+    return await document_service.delete_document(session, document_id, current_user)
