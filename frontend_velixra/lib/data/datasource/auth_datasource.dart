@@ -27,4 +27,11 @@ class AuthDatasource {
       throw ApiException.fromDioError(e);
     }
   }
+  Future<Map<String, dynamic>> getMe() async {
+    try {
+      final response = await dio.get("/auth/me");
+      return response.data;
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);}}
 }
+

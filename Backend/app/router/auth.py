@@ -10,7 +10,9 @@ from app.schemas import (
     VerifyOTPRequest,
     ResetPasswordRequest,
 )
-
+from app.core.dependencies import get_current_user
+from app.model import User
+from app.schemas import UserResponse
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
@@ -32,3 +34,8 @@ async def verify_otp(data: VerifyOTPRequest, session: AsyncSession = Depends(get
 @router.post("/reset-password")
 async def reset_password(data: ResetPasswordRequest, session: AsyncSession = Depends(get_session)):
     return await auth_service.reset_password(session, data)
+# ... existing router code ...
+
+@router.get("/me", response_model=UserResponse)
+async def get_me(current_user: User = Depends(get_current_user)):
+    return current_user

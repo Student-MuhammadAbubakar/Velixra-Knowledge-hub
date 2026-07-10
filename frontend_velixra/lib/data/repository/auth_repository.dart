@@ -36,4 +36,8 @@ class AuthRepository {
   }
 
   Future<void> logout() => tokenStorage.clear();
+  Future<UserModel> getCurrentUser() async {
+    final data = await datasource.getMe();
+    return UserModel.fromJson(data);
+  }
 }

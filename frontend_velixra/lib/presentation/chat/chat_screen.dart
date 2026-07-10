@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/role_label.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/chat_provider.dart';
 import '../shared/responsive_wrapper.dart';
 import 'widgets/chat_bubble.dart';
@@ -34,6 +36,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider);
+    final currentUserAsync = ref.watch(currentUserProvider);
 
     ref.listen(chatProvider, (previous, next) {
       if (next.messages.length != (previous?.messages.length ?? 0)) {
@@ -57,34 +60,41 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               color: AppColors.cardBody,
               child: Column(
                 children: [
+                  // Navy header
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+                    padding: const EdgeInsets.fromLTRB(4, 20, 16, 20),
                     decoration: const BoxDecoration(
                       color: AppColors.navy,
                       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Builder(
-                              builder: (innerContext) => IconButton(
-                                icon: const Icon(Icons.menu, color: AppColors.white),
-                                onPressed: () => Scaffold.of(innerContext).openDrawer(),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Column(
+                        Builder(
+                          builder: (innerContext) => IconButton(
+                            icon: const Icon(Icons.menu, color: AppColors.white),
+                            onPressed: () => Scaffold.of(innerContext).openDrawer(),
+                          ),
+                        ),
+
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: currentUserAsync.when(
+                            loading: () => Text("Loading...", style: AppTextStyles.headerSubtitle),
+                            error: (_, __) => Text("Employee", style: AppTextStyles.headerSubtitle),
+                            data: (user) => Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Ask Velixra", style: AppTextStyles.headerTitle),
-                                Text("Reimbursement policy chat",
-                                    style: AppTextStyles.headerSubtitle),
+                                Text(
+                                  user.name,
+                                  style: AppTextStyles.headerTitle,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(roleLabel(user.role), style: AppTextStyles.headerSubtitle),
                               ],
                             ),
-                          ],
+                          ),
                         ),
                         const LogoutButton(),
                       ],

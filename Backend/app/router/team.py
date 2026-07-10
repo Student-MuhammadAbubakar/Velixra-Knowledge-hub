@@ -12,7 +12,7 @@ from app.schemas import (
     UserResponse,
 )
 from app.model import User
-from app.schemas import ManagerListItem, RequestChangeRequest
+from app.schemas import  RequestChangeRequest
 
 router = APIRouter(prefix="/team", tags=["Team"])
 
@@ -23,6 +23,7 @@ async def invite_manager(
     session: AsyncSession = Depends(get_session),
     current_user: User = Depends(get_current_owner),   # owner ONLY
 ):
+    assert current_user.id is not None
     return await auth_service.invite_manager(session, data, invited_by=current_user.id)
 
 
@@ -32,6 +33,7 @@ async def invite_employee(
     session: AsyncSession = Depends(get_session),
     current_user: User = Depends(get_current_manager_or_owner),   # owner OR manager
 ):
+    assert current_user.id is not None
     return await auth_service.invite_employee(session, data, invited_by=current_user.id)
 
 

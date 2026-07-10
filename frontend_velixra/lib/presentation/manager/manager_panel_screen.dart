@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/role_label.dart';
 import '../../providers/document_provider.dart';
-import '../shared/responsive_wrapper.dart';
-import 'widgets/document_list_tile.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/team_provider.dart';
 import '../owner/widgets/logout_button.dart';
 import '../owner/widgets/invite_dialog.dart';
-import '../../providers/team_provider.dart';
+import '../shared/responsive_wrapper.dart';
+import 'widgets/document_list_tile.dart';
 
 class ManagerPanelScreen extends ConsumerWidget {
   const ManagerPanelScreen({super.key});
@@ -32,6 +34,7 @@ class ManagerPanelScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final documentsAsync = ref.watch(documentsProvider);
     final actionsState = ref.watch(documentActionsProvider);
+    final currentUserAsync = ref.watch(currentUserProvider);
 
     ref.listen(documentActionsProvider, (previous, next) {
       next.whenOrNull(
@@ -51,10 +54,10 @@ class ManagerPanelScreen extends ConsumerWidget {
               color: AppColors.cardBody,
               child: Column(
                 children: [
-                  // Navy header with gold square icon (top right, per design)
+                  // Navy header
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                    padding: const EdgeInsets.fromLTRB(24, 20, 16, 24),
                     decoration: const BoxDecoration(
                       color: AppColors.navy,
                       borderRadius:
@@ -63,34 +66,29 @@ class ManagerPanelScreen extends ConsumerWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Acme Corp", style: AppTextStyles.headerSubtitle),
-                            const SizedBox(height: 4),
-                            Text("Manager panel", style: AppTextStyles.headerTitle),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const LogoutButton(),
-                            const SizedBox(width: 8),
-                            Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: AppColors.gold,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
+                        Expanded(
+                          child: currentUserAsync.when(
+                            loading: () => Text("Loading...",
+                                style: AppTextStyles.headerSubtitle),
+                            error: (_, __) => Text("Manager",
+                                style: AppTextStyles.headerSubtitle),
+                            data: (user) => Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(user.name,
+                                    style: AppTextStyles.headerTitle),
+                                const SizedBox(height: 4),
+                                Text(roleLabel(user.role),
+                                    style: AppTextStyles.headerSubtitle),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
+                        const LogoutButton(),
                       ],
                     ),
                   ),
 
-                  // This Column now sits directly under SafeArea (bounded height),
-                  // so Expanded can correctly fill the remaining space below the header.
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.all(20),
@@ -187,7 +185,7 @@ class ManagerPanelScreen extends ConsumerWidget {
                                     .map((doc) => DocumentListTile(
                                   document: doc,
                                   onEdit: () {
-                                    // toggle visibility flow, wired next
+                                    // toggle visibility flow
                                   },
                                   onDelete: () async {
                                     await ref

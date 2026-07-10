@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../core/network/dio_client.dart';
 import '../core/storage/token_storage.dart';
 import '../data/datasource/auth_datasource.dart';
+import '../data/models/user_model.dart';
 import '../data/repository/auth_repository.dart';
 
 final dioProvider = Provider<Dio>((ref) => DioClient().dio);
@@ -37,7 +38,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 }
-
+final currentUserProvider = FutureProvider.autoDispose<UserModel>((ref) async {
+  final repository = ref.watch(authRepositoryProvider);
+  return repository.getCurrentUser();
+});
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(ref.watch(authRepositoryProvider));
 });

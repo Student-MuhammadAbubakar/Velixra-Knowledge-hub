@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/role_label.dart';
 import '../../providers/analytics_provider.dart';
 import '../../providers/document_provider.dart';
+import '../../providers/auth_provider.dart';
 import 'widgets/stat_card.dart';
 import 'widgets/question_progress_tile.dart';
 import 'widgets/logout_button.dart';
@@ -19,6 +21,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final analyticsAsync = ref.watch(ownerAnalyticsProvider);
     final documentsAsync = ref.watch(documentsProvider);
+    final currentUserAsync = ref.watch(currentUserProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -33,6 +36,7 @@ class OwnerDashboardScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Navy header
+                    // Navy header
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.fromLTRB(24, 20, 16, 24),
@@ -40,17 +44,41 @@ class OwnerDashboardScreen extends ConsumerWidget {
                         color: AppColors.navy,
                         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: const [LogoutButton()],
-                          ),
-                          Text("Welcome back", style: AppTextStyles.headerSubtitle),
-                          const SizedBox(height: 4),
-                          Text("Owner dashboard", style: AppTextStyles.headerTitle),
-                        ],
+                      child: currentUserAsync.when(
+                        loading: () => Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("Loading...", style: AppTextStyles.headerTitle),
+                            const LogoutButton(),
+                          ],
+                        ),
+                        error: (_, __) => Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("Owner", style: AppTextStyles.headerTitle),
+                            const LogoutButton(),
+                          ],
+                        ),
+                        data: (user) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    user.name,
+                                    style: AppTextStyles.headerTitle,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const LogoutButton(),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(roleLabel(user.role), style: AppTextStyles.headerSubtitle),
+                          ],
+                        ),
                       ),
                     ),
 
